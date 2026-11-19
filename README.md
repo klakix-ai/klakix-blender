@@ -68,7 +68,7 @@ AI agent ──MCP──▶ klakix.com/api/mcp ──▶ command hub ◀── l
 ## Develop and test
 
 ```bash
-# Operation tests (59 checks), no network needed
+# Operation tests (60 checks), no network needed
 blender -b --factory-startup --python tests/test_ops.py
 
 # Validate and build the extension package

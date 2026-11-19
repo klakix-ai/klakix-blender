@@ -150,7 +150,13 @@ ok([("set_render", {"engine": "workbench"})], "workbench")
 r = runner.run_command({"id": "c", "govde": {"tur": "goruntu", "goruntu": {"tur": "render", "boyut": 400}}}, False, lambda m: None)
 check("render capture", r["tamam"] and len(r["goruntu"]["veri"]) > 1000 and r["goruntu"]["tur"] == "image/jpeg", {k: (v if k != "goruntu" else "...") for k, v in r.items()})
 r = runner.run_command({"id": "c", "govde": {"tur": "goruntu", "goruntu": {"tur": "viewport", "boyut": 400}}}, False, lambda m: None)
-check("viewport capture needs window", (not r["tamam"] and r["hata"]["kod"] == "invalid_input") or (bpy.app.background is False and r["tamam"]), r)
+if bpy.context.scene.camera:
+    check("viewport without window falls back to camera", r["tamam"] and len(r["goruntu"]["veri"]) > 1000 and r["sonuc"].get("requested") == "viewport", {k: v for k, v in r.items() if k != "goruntu"})
+else:
+    check("viewport capture needs window or camera", not r["tamam"] and r["hata"]["kod"] == "invalid_input", r)
+# Batch snapshot in the same situation also returns a picture
+r = runner.run_command({"id": "c", "govde": {"tur": "calistir", "islemler": [{"islem": "scene_info", "args": {}}], "atomik": True, "goruntu": {"tur": "viewport", "boyut": 400}}}, False, lambda m: None)
+check("batch snapshot", r["tamam"] and ("goruntu" in r) == bool(bpy.context.scene.camera), {k: v for k, v in r.items() if k != "goruntu"})
 
 r = runner.run_command({"id": "c", "govde": {"tur": "goruntu", "goruntu": {"tur": "camera", "boyut": 400}}}, False, lambda m: None)
 check("camera capture ok or clean error", r["tamam"] or not r["hata"].get("beklenmeyen"), {k: v for k, v in r.items() if k != "goruntu"})

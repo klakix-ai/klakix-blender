@@ -56,11 +56,31 @@ def capture(kind="viewport", max_size=960):
         if kind == "viewport":
             ctx = ops.window_context("VIEW_3D")
             if bpy.app.background or not ctx or "area" not in ctx:
-                raise ops.UserError("No 3D viewport is open (Blender may be running without a window). Use kind=camera or render.")
-            with bpy.context.temp_override(**ctx):
-                if not bpy.ops.screen.screenshot_area.poll():
-                    raise ops.UserError("The 3D viewport can't be captured right now (a menu or dialog may be open). Use kind=camera or render.")
-                bpy.ops.screen.screenshot_area(filepath=path)
+                if sc.camera:
+                    # No window (e.g. blender -b): the camera view is the closest picture we can give
+                    img, cinfo = capture("camera", max_size)
+                    cinfo["requested"] = "viewport"
+                    cinfo["note"] = "No 3D viewport window, showing the camera view instead."
+                    return img, cinfo
+                raise ops.UserError("No 3D viewport is open (Blender may be running without a window) and the scene has no camera. Add one with add_camera, then use kind=camera.")
+            # Draw the viewport's own view off-screen: no menus, dialogs, splash or other UI on top
+            r = sc.render
+            old_pct = r.resolution_percentage
+            r.resolution_percentage = max(1, min(100, int(100 * max_size / max(r.resolution_x, r.resolution_y))))
+            try:
+                with bpy.context.temp_override(**ctx):
+                    bpy.ops.render.opengl(write_still=False, view_context=True)
+                bpy.data.images["Render Result"].save_render(filepath=path)
+                info["method"] = "viewport-render"
+            except Exception:
+                # Fallback: screenshot of the viewport area (may include UI on top of it)
+                with bpy.context.temp_override(**ctx):
+                    if not bpy.ops.screen.screenshot_area.poll():
+                        raise ops.UserError("The 3D viewport can't be captured right now (a menu or dialog may be open). Use kind=camera or render.")
+                    bpy.ops.screen.screenshot_area(filepath=path)
+                info["method"] = "screenshot"
+            finally:
+                r.resolution_percentage = old_pct
         elif kind == "camera":
             if not sc.camera:
                 raise ops.UserError("The scene has no active camera. Add one with add_camera.")
