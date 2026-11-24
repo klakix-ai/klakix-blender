@@ -1,9 +1,15 @@
 # Klakix Bridge for Blender (Blender MCP)
 
-Let Claude, ChatGPT, Cursor, Claude Code or any MCP client work in your open Blender scene.
-Klakix Bridge is a free, GPL-3.0 Blender add-on (Blender 4.2 or later) that connects Blender to the
-hosted [Klakix MCP server](https://klakix.com/mcp). Your agent builds sets, adds lights and cameras,
-animates, renders and places AI-generated images and videos, and looks at the result after every step.
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/klakix-ai/klakix-blender)](https://github.com/klakix-ai/klakix-blender/releases/latest)
+[![Blender 4.2+](https://img.shields.io/badge/Blender-4.2%2B-orange)](https://www.blender.org)
+[![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-black)](https://modelcontextprotocol.io)
+
+**What is it?** A free Blender add-on (GPL-3.0, Blender 4.2 or later) that lets an AI assistant work in your open Blender scene over MCP: it builds sets, adds lights and cameras, animates, renders, and places AI-generated images and videos, then looks at the result after every step.
+
+**Who is it for?** Blender artists and developers who use Claude, ChatGPT, Cursor, Claude Code or any MCP client and want the assistant to act inside Blender instead of only writing scripts.
+
+**How do I install it?** Download `klakix-blender.zip` from the latest release, drag it into Blender, press **Connect** in the Klakix tab and sign in. Then add the Klakix connector (`https://klakix.com/api/mcp`) to Claude, Cursor, VS Code, Cline or any other MCP client. Steps are in [Install](#install). The add-on connects Blender to the hosted [Klakix MCP server](https://klakix.com/mcp).
 
 - **One connector.** The same MCP URL you already use for image and video generation
   (`https://klakix.com/api/mcp`) also drives Blender. No second "bridge" server to add.
