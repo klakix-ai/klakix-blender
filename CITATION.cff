@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Klakix Bridge for Blender"
+abstract: "Blender add-on that lets AI agents (Claude, ChatGPT, Cursor and others) build, light, animate and render in an open Blender scene over MCP."
+type: software
+authors:
+  - name: "Klakix"
+    website: "https://klakix.com"
+repository-code: "https://github.com/klakix-ai/klakix-blender"
+url: "https://klakix.com/blender-mcp"
+license: GPL-3.0-or-later
+version: 1.0.1
+date-released: 2026-11-19
+keywords:
+  - blender
+  - mcp
+  - model-context-protocol
+  - add-on
