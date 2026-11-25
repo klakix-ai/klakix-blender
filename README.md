@@ -89,6 +89,8 @@ and 5.2 LTS on Windows; the add-on is pure Python with no native parts.
 
 - [klakix-ai/klakix-mcp](https://github.com/klakix-ai/klakix-mcp): open-source MCP packages (OAuth 2.1
   server, stateless MCP server, stdio bridge) behind the hosted Klakix MCP server.
+- [klakix-ai/ai-video-skills](https://github.com/klakix-ai/ai-video-skills): Agent Skills for AI video,
+  including 3D previs: grey-box Blender blockouts as camera-path references for Seedance.
 - After Effects and Premiere Pro bridges are next, using the same protocol.
 
 Problems or ideas: open an issue, or ask your agent to call `report_issue`; unexpected add-on errors
