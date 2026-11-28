@@ -121,8 +121,22 @@ r = runner.run_command({"id": "x", "govde": {"tur": "calistir", "islemler": [{"i
 check("python blocked", r["hata"]["kod"] == "not_allowed", r)
 r = run([("run_python", {"code": "import bpy\nresult = len(bpy.data.objects)\nprint('hi')"})])
 check("python allowed", r["tamam"] and r["sonuc"]["sonuclar"][0]["sonuc"]["stdout"].strip() == "hi", r)
-r = run([("run_python", {"code": "raise RuntimeError('boom')"})])
-check("python exception is unexpected", not r["tamam"] and r["sonuc"]["sonuclar"][0]["hata"].get("beklenmeyen") is True, r)
+r = run([("run_python", {"code": "x = 1\nraise RuntimeError('boom')"})])
+h = r["sonuc"]["sonuclar"][0]["hata"]
+check("python exception is the agent's error", not r["tamam"] and h["kod"] == "python_error" and not h.get("beklenmeyen") and "line 2" in h["mesaj"], r)
+r = run([("run_python", {"code": "bpy.data.objects['NoSuchThing'].location.x = 1"})])
+h = r["sonuc"]["sonuclar"][0]["hata"]
+check("python bpy KeyError is the agent's error", h["kod"] == "python_error" and "KeyError" in h["mesaj"] and not h.get("beklenmeyen"), r)
+r = run([("run_python", {"code": "def f(:\n  pass"})])
+h = r["sonuc"]["sonuclar"][0]["hata"]
+check("python syntax error is the agent's error", h["kod"] == "python_error" and "SyntaxError" in h["mesaj"] and "line 1" in h["mesaj"], r)
+
+# Video output: Blender 5.x needs media_type VIDEO before FFMPEG
+r = ok([("set_render", {"file_format": "FFMPEG", "output_path": "//klakix_test_"})], "set_render FFMPEG")
+check("ffmpeg format set", bpy.context.scene.render.image_settings.file_format == "FFMPEG", r)
+r = ok([("set_render", {"file_format": "PNG"})], "set_render back to PNG")
+check("png format set", bpy.context.scene.render.image_settings.file_format == "PNG", r)
+check("scene_info has version", run([("scene_info", {})])["sonuc"]["sonuclar"][0]["sonuc"]["blender_version"] == bpy.app.version_string)
 
 # Media import (local file paths: prepare() is bypassed here)
 img_path = os.path.join(tempfile.gettempdir(), "klakix_test.png")

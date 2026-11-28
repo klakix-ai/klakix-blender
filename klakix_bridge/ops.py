@@ -57,6 +57,7 @@ GUIDE = """Klakix Bridge for Blender: working guide
 - Animation: set_frame_range, then keyframe at several frames (location/rotation/scale); interpolation can be BEZIER, LINEAR or CONSTANT.
 - save_file only when the user asks. Ask before delete_objects on things you did not create.
 - run_python exists only if the user enabled it in the add-on panel; prefer the operations above.
+- In run_python: check scene_info.blender_version first, the bpy API differs between versions (EEVEE is BLENDER_EEVEE_NEXT in 4.2-4.x but BLENDER_EEVEE in 5.x; video output in 5.x needs image_settings.media_type = "VIDEO" before file_format = "FFMPEG"; set_render already handles both). Look objects up with bpy.data.objects.get(name) and check for None (names you assumed may not exist or may have .001). A command must finish in about 40 seconds: don't render animations or run long loops in run_python.
 """
 
 # ---------------------------------------------------------------------------- helpers
@@ -243,6 +244,7 @@ def scene_info(args):
     for o in sc.objects:
         counts[o.type] = counts.get(o.type, 0) + 1
     return {
+        "blender_version": bpy.app.version_string,
         "file": bpy.data.filepath or None,
         "saved": not bpy.data.is_dirty,
         "scene": sc.name,
@@ -722,7 +724,7 @@ def set_frame_range(args):
             "samples": {"type": "integer"},
             "film_transparent": {"type": "boolean"},
             "output_path": {"type": "string"},
-            "file_format": {"type": "string", "enum": ["PNG", "JPEG", "OPEN_EXR", "FFMPEG"]},
+            "file_format": {"type": "string", "enum": ["PNG", "JPEG", "OPEN_EXR", "FFMPEG"], "description": "FFMPEG = video file (MPEG-4/H.264 by default)."},
         },
     },
 )
@@ -748,8 +750,33 @@ def set_render(args):
     if args.get("output_path"):
         r.filepath = str(args["output_path"])
     if args.get("file_format"):
-        r.image_settings.file_format = args["file_format"]
-    return {"engine": r.engine, "resolution": [r.resolution_x, r.resolution_y], "percentage": r.resolution_percentage, "output": r.filepath}
+        set_file_format(r, args["file_format"])
+    return {"engine": r.engine, "resolution": [r.resolution_x, r.resolution_y], "percentage": r.resolution_percentage, "output": r.filepath, "file_format": r.image_settings.file_format}
+
+
+def set_file_format(r, fmt):
+    """Output format. Blender 5.0+ splits it by media type: video (FFMPEG) only exists while media_type is VIDEO."""
+    fmt = str(fmt).upper()
+    im = r.image_settings
+    if hasattr(im, "media_type"):
+        want = "VIDEO" if fmt == "FFMPEG" else ("MULTI_LAYER_IMAGE" if fmt == "OPEN_EXR_MULTILAYER" else "IMAGE")
+        if im.media_type != want:
+            im.media_type = want
+    try:
+        im.file_format = fmt
+    except TypeError as e:
+        # The enum is dynamic (depends on build and media type): pass Blender's own list on to the agent
+        raise UserError("file_format %s isn't available in this Blender (%s): %s" % (fmt, bpy.app.version_string, e))
+    if fmt == "FFMPEG":
+        # A playable default: MPEG-4 container, H.264, medium quality (keeps what the user already set)
+        ff = r.ffmpeg
+        try:
+            if ff.format not in ("MPEG4", "QUICKTIME", "MKV", "WEBM"):
+                ff.format = "MPEG4"
+            if ff.codec in ("NONE", ""):
+                ff.codec = "H264"
+        except (TypeError, AttributeError):
+            pass
 
 
 def _world():

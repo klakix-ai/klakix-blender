@@ -11,7 +11,7 @@ Docs: https://klakix.com/blender-mcp
 bl_info = {
     "name": "Klakix Bridge",
     "author": "Klakix",
-    "version": (1, 0, 1),
+    "version": (1, 0, 2),
     "blender": (4, 2, 0),
     "location": "3D Viewport > Sidebar (N) > Klakix",
     "description": "Let Claude, ChatGPT and other AI agents work in your open Blender scene through Klakix MCP",
@@ -31,7 +31,7 @@ import bpy
 
 from . import net, ops, runner
 
-ADDON_VERSION = "1.0.1"
+ADDON_VERSION = "1.0.2"
 _bridge = None
 _log = []
 _info_cache = {}

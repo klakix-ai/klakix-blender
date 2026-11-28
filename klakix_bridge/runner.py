@@ -176,9 +176,25 @@ def _undo():
 def _error(e, op_name=None):
     if isinstance(e, ops.UserError):
         return {"kod": "invalid_input", "mesaj": str(e)}
+    if op_name == "run_python" and _from_agent_code(e):
+        # The agent's own script failed: tell the agent where, it is not an add-on bug
+        return {"kod": "python_error", "mesaj": "%s: %s%s" % (e.__class__.__name__, e, _agent_lines(e))}
     if isinstance(e, (TypeError, ValueError, KeyError)) and _from_args(e):
         return {"kod": "invalid_input", "mesaj": "%s: %s" % (e.__class__.__name__, e)}
     return {"kod": "op_failed", "mesaj": "%s: %s" % (e.__class__.__name__, e), "yigin": traceback.format_exc()[-8000:], "beklenmeyen": True}
+
+
+def _from_agent_code(e):
+    if isinstance(e, SyntaxError) and e.filename == "<agent>":
+        return True
+    return any(f.filename == "<agent>" for f in traceback.extract_tb(e.__traceback__))
+
+
+def _agent_lines(e):
+    if isinstance(e, SyntaxError):
+        return " (line %s of your code)" % e.lineno if e.lineno else ""
+    lines = [f.lineno for f in traceback.extract_tb(e.__traceback__) if f.filename == "<agent>"]
+    return " (line %s of your code)" % lines[-1] if lines else ""
 
 
 def _from_args(e):

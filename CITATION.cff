@@ -9,8 +9,8 @@ authors:
 repository-code: "https://github.com/klakix-ai/klakix-blender"
 url: "https://klakix.com/blender-mcp"
 license: GPL-3.0-or-later
-version: 1.0.1
-date-released: 2026-11-19
+version: 1.0.2
+date-released: 2026-11-28
 keywords:
   - blender
   - mcp

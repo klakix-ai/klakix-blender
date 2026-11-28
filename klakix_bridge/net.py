@@ -306,6 +306,7 @@ class Bridge:
                             "belge": info.get("document"),
                         },
                         self.token,
+                        timeout=45,
                     )
                     self._need_hello = False
                     self.latest_version = r.get("guncel_surum")
